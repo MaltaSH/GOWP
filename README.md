@@ -13,3 +13,8 @@ To launch a scan, use the following command
   go run wpgo.go -u https://example.com
 ```
 
+## Todo list 
+
+- Find themes 
+- Finds plugins 
+- New interface 
