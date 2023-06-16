@@ -29,14 +29,16 @@ func main() {
 	fmt.Println("Session ID : 05f643faf9020221785ecebbef7df21b4c10491e3c07795e264a04132f204c161f")
 	fmt.Println("")
 	time.Sleep(2 * time.Second)
-	fmt.Println("[+] The scan is in progress... Please wait.")
+	fmt.Println("[INFO] The scan is in progress... Please wait.")
+	fmt.Println("")
 	pingWebsite(*siteURL)
 	testWpAdmin(*siteURL)
 	testUpload(*siteURL)
+	fmt.Println("[INFO] Scan for sitesmap in progress...")
+	fmt.Println("")
 	testSitemap(*siteURL)
-	testSitemapPost(*siteURL)
-	testSitemapPost2(*siteURL)
-	testSitemapPage(*siteURL)
+	fmt.Println("[INFO] Scan for interesting files in progress...")
+	fmt.Println("")
 	testRobotxt(*siteURL)
 	testXMLRPC(*siteURL)
 }
@@ -59,122 +61,109 @@ func testWpAdmin(url string) {
 	adminURL := url + "/wp-admin"
 	resp, err := http.Get(adminURL)
 	if err != nil {
-		fmt.Println("[-] wp-admin not accessible :", err)
+		fmt.Println("Erreur lors de l'accès à wp-admin :", err)
+		fmt.Println("")
 		return
 	}
-
 	defer resp.Body.Close()
 
-	fmt.Println("[+] wp-admin found")
-	fmt.Println("-> Find with a direct request")
-	fmt.Println("")
+	if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden {
+		fmt.Println("[-] wp-admin non accessible :", resp.Status)
+		fmt.Println("")
+	} else {
+		fmt.Println("[+] wp-admin accessible")
+	}
 }
 
 func testUpload(url string) {
 	uploadURL := url + "/wp-content/uploads/"
 	resp, err := http.Get(uploadURL)
 	if err != nil {
-		fmt.Println("[-] Upload dir not available :", err)
+		fmt.Println("[-] Répertoire d'upload non disponible :", err)
+		fmt.Println("")
 		return
 	}
 
 	defer resp.Body.Close()
 
-	fmt.Println("[+] Upload dir found")
-	fmt.Println("-> Find with a direct request")
-	fmt.Println("")
+	if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden {
+		fmt.Println("[-] Répertoire d'upload non accessible :", resp.Status)
+		fmt.Println("")
+	} else {
+		fmt.Println("[+] Répertoire d'upload trouvé")
+		fmt.Println("-> Trouvé grâce à une requête directe")
+		fmt.Println("")
+	}
 }
 
 func testSitemap(url string) {
-	sitemapURL := url + "/sitemap_index.xml"
-	resp, err := http.Get(sitemapURL)
-	if err != nil {
-		fmt.Println("[-] sitemap_index.xml not accessible :", err)
-		return
+	testURLs := []string{
+		"/sitemap_index.xml",
+		"/wp-sitemap-posts-post-1.xml",
+		"/wp-sitemap-posts-post-2.xml",
+		"/wp-sitemap-posts-page-1.xml",
 	}
 
-	defer resp.Body.Close()
+	for _, path := range testURLs {
+		fullURL := url + path
+		resp, err := http.Get(fullURL)
+		if err != nil {
+			fmt.Printf("[-] %s non accessible: %s\n\n", path, err)
+			continue
+		}
 
-	fmt.Println("[+] sitemap_index.xml found")
-	fmt.Println("-> Find with a direct request")
-	fmt.Println("")
-}
+		defer resp.Body.Close()
 
-func testSitemapPost(url string) {
-	sitemapURL := url + "/wp-sitemap-posts-post-1.xml"
-	resp, err := http.Get(sitemapURL)
-	if err != nil {
-		fmt.Println("[-] wp-sitemap-posts-post-1.xml not accessible :", err)
-		return
+		if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden {
+			fmt.Printf("[-] %s non accessible: %s\n\n", path, resp.Status)
+		} else {
+			fmt.Printf("[+] %s trouvé\n", path)
+			fmt.Println("-> Trouvé grâce à une requête directe")
+			fmt.Println("")
+		}
 	}
-
-	defer resp.Body.Close()
-
-	fmt.Println("[+] wp-sitemap-posts-post-1.xml found")
-	fmt.Println("-> Find with a direct request")
-	fmt.Println("")
-}
-
-func testSitemapPost2(url string) {
-	sitemapURL := url + "/wp-sitemap-posts-post-2.xml"
-	resp, err := http.Get(sitemapURL)
-	if err != nil {
-		fmt.Println("[-] wp-sitemap-posts-post-2.xml not accessible :", err)
-		return
-	}
-
-	defer resp.Body.Close()
-
-	fmt.Println("[+] wp-sitemap-posts-post-2.xml found")
-	fmt.Println("-> Find with a direct request")
-	fmt.Println("")
-}
-
-func testSitemapPage(url string) {
-	sitemapURL := url + "/wp-sitemap-posts-page-1.xml"
-	resp, err := http.Get(sitemapURL)
-	if err != nil {
-		fmt.Println("[-] wp-sitemap-posts-page-1.xml not accessible :", err)
-		return
-	}
-
-	defer resp.Body.Close()
-
-	fmt.Println("[+] wp-sitemap-posts-page-1.xml found")
-	fmt.Println("-> Find with a direct request")
-	fmt.Println("")
 }
 
 func testRobotxt(url string) {
-	sitemapURL := url + "/robot.txt"
-	resp, err := http.Get(sitemapURL)
+	robotURL := url + "/robots.txt"
+	resp, err := http.Get(robotURL)
 	if err != nil {
-		fmt.Println("[-] Robot.txt not accessible :", err)
+		fmt.Println("[-] robots.txt non accessible :", err)
+		fmt.Println("")
 		return
 	}
 
 	defer resp.Body.Close()
 
-	fmt.Println("|+| Robot.txt found")
-	fmt.Println("-> Find with a direct request")
-	fmt.Println("")
+	if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden {
+		fmt.Println("[-] robots.txt non accessible :", resp.Status)
+		fmt.Println("")
+	} else {
+		fmt.Println("[+] robots.txt trouvé")
+		fmt.Println("-> Trouvé grâce à une requête directe")
+		fmt.Println("")
+	}
 }
 
 func testXMLRPC(url string) {
-	sitemapURL := url + "/xmlrpc.php"
-	resp, err := http.Get(sitemapURL)
+	xmlrpcURL := url + "/xmlrpc.php"
+	resp, err := http.Get(xmlrpcURL)
 	if err != nil {
-		fmt.Println("[-] XMLRPC not accessible :", err)
+		fmt.Println("[-] XMLRPC non accessible :", err)
 		return
 	}
 
 	defer resp.Body.Close()
 
-	fmt.Println("[+] XMLRPC found")
-	fmt.Println("-> Find with a direct request")
-	fmt.Println("-> https://codex.wordpress.org/XML-RPC_WordPress_API")
-	fmt.Println("-> Possible exploit : https://nitesculucian.github.io/2019/07/01/exploiting-the-xmlrpc-php-on-all-wordpress-versions/")
-	fmt.Println("")
-
+	if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusForbidden {
+		fmt.Println("[-] XMLRPC non accessible :", resp.Status)
+		fmt.Println("")
+	} else {
+		fmt.Println("[+] XMLRPC trouvé")
+		fmt.Println("-> Trouvé grâce à une requête directe")
+		fmt.Println("-> Emplacement :" + url + "/xmlrpc.php")
+		fmt.Println("-> Référence : https://codex.wordpress.org/XML-RPC_WordPress_API")
+		fmt.Println("-> Exploit possible : https://nitesculucian.github.io/2019/07/01/exploiting-the-xmlrpc-php-on-all-wordpress-versions/")
+		fmt.Println("")
+	}
 }
-
