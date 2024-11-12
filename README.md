@@ -17,4 +17,7 @@ To launch a scan, use the following command
 
 - Find themes 
 - Finds plugins 
-- New interface 
+- New interface
+
+## WARNING
+I am not responsible for your actions, this script was for educational purposes only.
